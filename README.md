@@ -109,10 +109,15 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 
 ### Git
 
-생성되는 링크·junction은 `.gitignore`로 제외한다. junction은 절대 경로를 저장해 머신 간
-공유가 불가능하고, 링크는 각자 setup 스크립트로 만드는 local artifact다.
-`.mcp.json`과 `CLAUDE.md`도 같은 이유로 제외하며, 공유되는 원본은 커밋되는
-`.agent/mcp/servers.json`과 `AGENTS.md`다.
+디렉터리 링크·junction은 `.gitignore`로 제외한다. junction은 절대 경로를 저장해 머신 간
+공유가 불가능하고, 링크는 각자 setup 스크립트로 만드는 local artifact다. `CLAUDE.md`도
+같은 이유로 제외하며, 공유되는 원본은 커밋되는 `AGENTS.md`다.
+
+`.mcp.json`은 제외하지 않는다. Claude Code가 project scope MCP 설정을 버전 관리로 공유하도록
+설계된 파일이라 커밋 대상으로 남겨둔다. `.agent/mcp/servers.json`을 만들고 setup을 실행하면
+`.mcp.json` 링크가 untracked로 나타나며, 커밋할지는 선택이다. 커밋하면 POSIX 클론에서는
+스크립트를 돌리지 않아도 바로 동작하지만, Windows 클론에서는 `git config core.symlinks true`가
+없으면 링크가 경로 문자열이 담긴 일반 파일로 풀린다.
 
 ## 구조
 
@@ -135,9 +140,10 @@ setup 스크립트가 생성하며 Git에서 제외되는 경로(gitignored):
 .claude/skills, .claude/rules, .claude/agents, .claude/commands
 .agents/skills
 .opencode/commands
-.mcp.json
 CLAUDE.md
 ```
+
+`.mcp.json`도 setup 스크립트가 생성하지만 gitignore하지 않는다(위 Git 절 참고).
 
 `.claude/`, `.agents/`, `.opencode/`는 각 도구가 요구하는 고정 경로이므로 옮길 수 없다.
 규칙을 고칠 때는 `.agent/` 아래 정본과 `AGENTS.md`만 수정한다.

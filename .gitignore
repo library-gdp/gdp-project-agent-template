@@ -11,10 +11,6 @@
 /.agents/skills
 /.opencode/commands
 
-# Project-scoped MCP configuration. Normally committed, but here it is a link
-# to the committed source of truth at .agent/mcp/servers.json.
-/.mcp.json
-
 # Claude Code v2.1.277+ reads AGENTS.md directly; older versions need this
 # link to it.
 /CLAUDE.md
