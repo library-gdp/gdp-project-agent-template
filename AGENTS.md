@@ -26,10 +26,15 @@ Data Architecture, Tech stacks, Wireframe, Storyboard — 은 현재 형상을 �
 | 에이전트 | 진입점 |
 |---|---|
 | 모든 에이전트 | `.agent/skills/project-documentation/SKILL.md` (정본) |
-| Claude Code | 스킬 자동 인식 (`.claude/skills/` → 정본 symlink), 또는 `/doc-sync` |
+| Claude Code | 스킬 자동 인식 (`.claude/skills/` → `.agent/skills/` 링크), 또는 `/doc-sync` |
 | Codex | 이 파일 + `.codex/prompts/doc-sync.md` (`/doc-sync`) |
 | OpenCode | 스킬 자동 인식 (`.opencode/skill/` → 정본 symlink), 또는 `/doc-sync` |
 | 그 외 | 이 파일을 읽고 정본 경로를 직접 참조 |
 
-`.claude/skills/`와 `.opencode/skill/` 항목은 정본을 가리키는 symlink다. symlink를 따르지 않는 환경이라면
+`.claude/skills/`와 `.opencode/skill/` 항목은 정본을 가리키는 링크다. 링크를 따르지 않는 환경이라면
 `.agent/skills/project-documentation/SKILL.md`를 직접 읽으면 된다.
+
+`.claude/` 쪽 링크(`skills`, `rules`, `agents`)와 root의 `.mcp.json`은 커밋되지 않는다.
+체크아웃 후 `./script/setup-agent-links.sh`(Linux/macOS) 또는
+`pwsh -File script\setup-agent-links.ps1`(Windows)을 한 번 실행하면 생성된다.
+자세한 내용은 README의 "Claude Code 링크 설정"을 본다.

@@ -1,0 +1,9 @@
+# script/setup-agent-links.{sh,ps1} 이 만드는 링크.
+# 정본은 .agent/ 아래에 있고, 링크 자체는 OS 마다 형태가 달라(symlink / junction)
+# 커밋하지 않는다. 체크아웃 후 스크립트를 한 번 실행하면 생성된다.
+/.claude/skills
+/.claude/rules
+/.claude/agents
+
+# MCP project-scoped 설정. 정본은 .agent/mcp.json 이고 이 파일은 그 링크다.
+/.mcp.json
