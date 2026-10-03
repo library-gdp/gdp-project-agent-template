@@ -7,7 +7,7 @@
 프로젝트 문서 9종 — PRD, Requirements, ADR, System Architecture, Application Architecture,
 Data Architecture, Tech stacks, Wireframe, Storyboard — 은 현재 형상을 따라가야 한다.
 
-아래 상황 중 하나에 해당하면 **`skills/project-documentation/SKILL.md`를 읽고 그 절차를 따른다.**
+아래 상황 중 하나에 해당하면 **`.agent/skills/project-documentation/SKILL.md`를 읽고 그 절차를 따른다.**
 
 - 사용자가 문서 작성·최신화·점검·정리를 요청했다.
 - 설계 결정이 확정되었다.
@@ -25,11 +25,11 @@ Data Architecture, Tech stacks, Wireframe, Storyboard — 은 현재 형상을 �
 
 | 에이전트 | 진입점 |
 |---|---|
-| 모든 에이전트 | `skills/project-documentation/SKILL.md` (정본) |
+| 모든 에이전트 | `.agent/skills/project-documentation/SKILL.md` (정본) |
 | Claude Code | 스킬 자동 인식 (`.claude/skills/` → 정본 symlink), 또는 `/doc-sync` |
 | Codex | 이 파일 + `.codex/prompts/doc-sync.md` (`/doc-sync`) |
 | OpenCode | 스킬 자동 인식 (`.opencode/skill/` → 정본 symlink), 또는 `/doc-sync` |
 | 그 외 | 이 파일을 읽고 정본 경로를 직접 참조 |
 
 `.claude/skills/`와 `.opencode/skill/` 항목은 정본을 가리키는 symlink다. symlink를 따르지 않는 환경이라면
-`skills/project-documentation/SKILL.md`를 직접 읽으면 된다.
+`.agent/skills/project-documentation/SKILL.md`를 직접 읽으면 된다.
