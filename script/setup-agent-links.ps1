@@ -34,12 +34,13 @@ $DirectoryLinks = @(
 #
 #   .mcp.json  Claude Code reads project-scoped MCP servers from this one file
 #              at the project root, in {"mcpServers": {...}} form. There is no
-#              .claude/mcp directory.
+#              .claude/mcp directory, so the source is the single file
+#              .agent/mcp.json rather than a directory.
 #   CLAUDE.md  Claude Code v2.1.277+ reads AGENTS.md directly, but older
 #              versions need a CLAUDE.md. Linking the two keeps one source.
 $FileLinks = @(
-    @{ Name = 'mcp';          Source = '.agent/mcp/servers.json'; Target = '.mcp.json' }
-    @{ Name = 'instructions'; Source = 'AGENTS.md';               Target = 'CLAUDE.md' }
+    @{ Name = 'mcp';          Source = '.agent/mcp.json'; Target = '.mcp.json' }
+    @{ Name = 'instructions'; Source = 'AGENTS.md';       Target = 'CLAUDE.md' }
 )
 
 # ---------------------------------------------------------------------------

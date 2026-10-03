@@ -34,7 +34,7 @@ Agent resource setup
 [SKIP]   agents       .agent/agents does not exist
 [OK]     commands     .claude/commands -> .agent/commands
 [OK]     commands     .opencode/commands -> .agent/commands
-[SKIP]   mcp          .agent/mcp/servers.json does not exist
+[OK]     mcp          .mcp.json -> .agent/mcp.json
 [OK]     instructions CLAUDE.md -> AGENTS.md
 
 Done.
@@ -52,7 +52,7 @@ Done.
 | `.agent/agents` | `.claude/agents` | Claude Code (subagents) |
 | `.agent/commands` | `.claude/commands` | Claude Code |
 | `.agent/commands` | `.opencode/commands` | opencode |
-| `.agent/mcp/servers.json` | `.mcp.json` | Claude Code (project MCP) |
+| `.agent/mcp.json` | `.mcp.json` | Claude Code (project MCP) |
 | `AGENTS.md` | `CLAUDE.md` | Claude Code v2.1.277 미만 |
 
 리소스를 추가할 때는 두 스크립트의 mapping 테이블에 각각 한 줄만 추가한다
@@ -79,11 +79,35 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 프로젝트 루트의 **단일 파일 `.mcp.json`**이고 형식은 `{"mcpServers": {...}}`다.
 `.claude/mcp` 같은 경로는 존재하지 않으므로 만들지 않는다.
 
-`.agent/mcp/servers.json`이 그 형식을 그대로 사용하므로 변환 없이 파일 단위로 링크한다.
-자세한 형식은 [`.agent/mcp/README.md`](.agent/mcp/README.md) 참고.
+정본은 **`.agent/mcp.json`** 단일 파일이고, Claude Code의 `.mcp.json` 형식을 그대로
+사용하므로 변환 없이 파일 단위로 링크한다. 서버를 추가할 때는 이 파일만 수정한다.
 
-`servers.json`이 없으면 `[SKIP]`으로 보고하고 루트를 건드리지 않는다. 빈 `.mcp.json`을
-만들지 않는다.
+```json
+{
+  "mcpServers": {
+    "example-http": {
+      "type": "http",
+      "url": "https://example.com/mcp"
+    },
+    "example-stdio": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@example/mcp-server"],
+      "env": {}
+    }
+  }
+}
+```
+
+템플릿에는 서버가 없는 빈 상태(`{"mcpServers": {}}`)로 들어 있다. 유효한 JSON이므로
+링크는 항상 생성되며, 서버가 등록될 때까지 Claude Code에 아무 영향이 없다.
+
+`claude mcp add --scope project`로 서버를 추가하면 `.mcp.json`에 쓰는데, 그 경로가 링크라
+결과적으로 `.agent/mcp.json`에 기록된다. 의도된 동작이다. Windows에서 hard link로 연결된
+경우에는 아래 Windows 참고의 주의사항을 먼저 확인한다.
+
+local scope(`~/.claude.json`, 개인·현재 프로젝트)와 user scope(`~/.claude.json`, 개인·모든
+프로젝트)는 홈 디렉터리에 저장되므로 이 파일의 범위를 벗어난다.
 
 ### 안전 동작
 
@@ -114,8 +138,8 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 같은 이유로 제외하며, 공유되는 원본은 커밋되는 `AGENTS.md`다.
 
 `.mcp.json`은 제외하지 않는다. Claude Code가 project scope MCP 설정을 버전 관리로 공유하도록
-설계된 파일이라 커밋 대상으로 남겨둔다. `.agent/mcp/servers.json`을 만들고 setup을 실행하면
-`.mcp.json` 링크가 untracked로 나타나며, 커밋할지는 선택이다. 커밋하면 POSIX 클론에서는
+설계된 파일이라 커밋 대상으로 남겨둔다. setup을 실행하면 `.mcp.json` 링크가
+untracked로 나타나며, 커밋할지는 선택이다. 커밋하면 POSIX 클론에서는
 스크립트를 돌리지 않아도 바로 동작하지만, Windows 클론에서는 `git config core.symlinks true`가
 없으면 링크가 경로 문자열이 담긴 일반 파일로 풀린다.
 
@@ -128,7 +152,7 @@ AGENTS.md                                 # 모든 에이전트 공통 진입점
     SKILL.md                              # 문서화 Rule 정본
     references/document-types.md          # 문서 9종별 판정 기준
   commands/doc-sync.md                    # /doc-sync
-  mcp/README.md                           # MCP 설정 형식 (servers.json 위치)
+  mcp.json                                # MCP 설정 정본 (빈 상태로 포함)
 script/
   setup-agent-links.sh                    # Linux / macOS
   setup-agent-links.ps1                   # Windows PowerShell
