@@ -2,7 +2,8 @@
 
 코딩 에이전트(Claude Code, Codex, OpenCode 등)에 공통으로 적용할 규칙을 담은 프로젝트 템플릿.
 
-`.agent/`가 에이전트 관련 설정의 **source of truth**이고, 각 에이전트 전용 경로에는 링크만 생성한다.
+`.agent/`와 `AGENTS.md`가 에이전트 관련 설정의 **source of truth**다. 리포지토리에는 특정
+에이전트 전용 파일을 두지 않고, 각 에이전트가 요구하는 경로는 setup 스크립트가 링크로 생성한다.
 
 ## Setup
 
@@ -27,13 +28,14 @@ chmod +x script/setup-agent-links.sh   # 최초 1회, 실행 권한이 없는 �
 Agent resource setup
   project root: /home/you/gdp-project-agent-template
 
-[OK]     skills    .claude/skills -> .agent/skills
-[SKIP]   rules     .agent/rules does not exist
-[SKIP]   agents    .agent/agents does not exist
-[OK]     commands  .claude/commands -> .agent/commands
-[OK]     skills    .opencode/skill -> .agent/skills
-[OK]     commands  .opencode/command -> .agent/commands
-[SKIP]   mcp       .agent/mcp/servers.json does not exist
+[OK]     skills       .claude/skills -> .agent/skills
+[OK]     skills       .agents/skills -> .agent/skills
+[SKIP]   rules        .agent/rules does not exist
+[SKIP]   agents       .agent/agents does not exist
+[OK]     commands     .claude/commands -> .agent/commands
+[OK]     commands     .opencode/commands -> .agent/commands
+[SKIP]   mcp          .agent/mcp/servers.json does not exist
+[OK]     instructions CLAUDE.md -> AGENTS.md
 
 Done.
 ```
@@ -42,21 +44,34 @@ Done.
 
 ### Mapping
 
-| 리소스 | Source (`.agent/`) | Target | Claude Code 공식 경로 |
-|---|---|---|---|
-| Skills | `.agent/skills` | `.claude/skills` | `.claude/skills/<name>/SKILL.md` |
-| Rules | `.agent/rules` | `.claude/rules` | `.claude/rules/**/*.md` |
-| Subagents | `.agent/agents` | `.claude/agents` | `.claude/agents/*.md` |
-| Commands | `.agent/commands` | `.claude/commands` | `.claude/commands/*.md` |
-| Skills | `.agent/skills` | `.opencode/skill` | (OpenCode) |
-| Commands | `.agent/commands` | `.opencode/command` | (OpenCode) |
-| MCP | `.agent/mcp/servers.json` | `.mcp.json` | 프로젝트 루트 `.mcp.json` |
+| Source | Target | 이 경로를 읽는 에이전트 |
+|---|---|---|
+| `.agent/skills` | `.claude/skills` | Claude Code, opencode |
+| `.agent/skills` | `.agents/skills` | Codex, opencode |
+| `.agent/rules` | `.claude/rules` | Claude Code |
+| `.agent/agents` | `.claude/agents` | Claude Code (subagents) |
+| `.agent/commands` | `.claude/commands` | Claude Code |
+| `.agent/commands` | `.opencode/commands` | opencode |
+| `.agent/mcp/servers.json` | `.mcp.json` | Claude Code (project MCP) |
+| `AGENTS.md` | `CLAUDE.md` | Claude Code v2.1.277 미만 |
 
 리소스를 추가할 때는 두 스크립트의 mapping 테이블에 각각 한 줄만 추가한다
 (`directory_links()` / `$DirectoryLinks`).
 
-`.codex/prompts/`는 링크 대상이 아니다. Codex prompt 파일은 YAML frontmatter를 쓰지 않아
-`.agent/commands/`의 파일과 내용이 달라 같은 원본을 공유할 수 없다.
+Target 경로는 각 에이전트의 공식 탐색 경로를 조사해 정한 것이다.
+
+- **Skills** — Claude Code는 `.claude/skills`, Codex는 `.agents/skills`를 스캔한다. opencode는
+  `.opencode/skills`, `.claude/skills`, `.agents/skills`를 모두 스캔하므로 별도 링크가 필요 없다.
+  세 에이전트 모두 `SKILL.md` + `name`/`description` frontmatter 형식이 같고 symlink를 따른다.
+- **Rules / Subagents** — Claude Code 전용 기능이다. `.claude/rules`는 `.md`를 재귀 탐색하며
+  `paths` frontmatter로 특정 파일에만 적용할 수 있다. subagent는 `.claude/agents/*.md`다.
+- **Commands** — Claude Code는 `.claude/commands`, opencode는 `.opencode/commands`다.
+  **Codex는 project-scoped custom prompt를 지원하지 않는다**(user-level `~/.codex/prompts/`만
+  지원하며, 해당 기능 자체가 skill로 대체되며 deprecated). 따라서 Codex용 command 링크는 없고,
+  Codex에서는 `.agents/skills`로 등록된 스킬이 이름·description으로 트리거된다.
+- **CLAUDE.md** — Claude Code v2.1.277부터 `AGENTS.md`를 직접 읽으므로 원래는 불필요하다.
+  구버전과 `AGENTS.md`를 읽지 못하는 세션을 위해 링크로만 생성하고 커밋하지 않는다.
+  `CLAUDE.md`가 있으면 Claude Code는 그 파일만 읽지만, 링크라 내용이 `AGENTS.md`와 같다.
 
 ### MCP 처리
 
@@ -84,7 +99,7 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 
 - 디렉터리는 **directory junction**(`New-Item -ItemType Junction`)을 사용한다. 관리자 권한과
   Developer Mode가 모두 필요 없다.
-- `.mcp.json`은 단일 파일이라 junction을 쓸 수 없다(junction은 디렉터리만 가리킨다).
+- `.mcp.json`과 `CLAUDE.md`는 단일 파일이라 junction을 쓸 수 없다(junction은 디렉터리만 가리킨다).
   파일 symbolic link를 먼저 시도하고, 실패하면 hard link로 fallback한다. hard link는 NTFS
   동일 볼륨에서 권한 상승 없이 생성된다. **파일 복사 fallback은 없다** — 복사본은 원본 추적이
   조용히 끊기기 때문이다. 둘 다 실패하면 이유와 해결 방법을 출력하고 실패 처리한다.
@@ -96,12 +111,13 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 
 생성되는 링크·junction은 `.gitignore`로 제외한다. junction은 절대 경로를 저장해 머신 간
 공유가 불가능하고, 링크는 각자 setup 스크립트로 만드는 local artifact다.
-`.mcp.json`도 같은 이유로 제외하며, 공유되는 원본은 커밋되는 `.agent/mcp/servers.json`이다.
+`.mcp.json`과 `CLAUDE.md`도 같은 이유로 제외하며, 공유되는 원본은 커밋되는
+`.agent/mcp/servers.json`과 `AGENTS.md`다.
 
 ## 구조
 
 ```text
-AGENTS.md                                 # 모든 에이전트 공통 진입점 (CLAUDE.md는 이 파일의 symlink)
+AGENTS.md                                 # 모든 에이전트 공통 진입점 (committed)
 .agent/                                   # 벤더 중립 정본 (committed)
   skills/project-documentation/
     SKILL.md                              # 문서화 Rule 정본
@@ -111,12 +127,20 @@ AGENTS.md                                 # 모든 에이전트 공통 진입점
 script/
   setup-agent-links.sh                    # Linux / macOS
   setup-agent-links.ps1                   # Windows PowerShell
-.codex/prompts/doc-sync.md                # Codex 전용 (frontmatter 없음, 링크 대상 아님)
-.claude/, .opencode/                      # setup 스크립트가 생성 (gitignored)
 ```
 
-`.claude/`, `.codex/`, `.opencode/`는 각 도구가 요구하는 고정 경로이므로 옮길 수 없다.
-규칙을 고칠 때는 `.agent/` 아래 정본만 수정한다.
+setup 스크립트가 생성하며 Git에서 제외되는 경로(gitignored):
+
+```text
+.claude/skills, .claude/rules, .claude/agents, .claude/commands
+.agents/skills
+.opencode/commands
+.mcp.json
+CLAUDE.md
+```
+
+`.claude/`, `.agents/`, `.opencode/`는 각 도구가 요구하는 고정 경로이므로 옮길 수 없다.
+규칙을 고칠 때는 `.agent/` 아래 정본과 `AGENTS.md`만 수정한다.
 
 `.agent/`는 숨은 디렉터리이므로 `grep`, `rg` 기본 설정에서는 검색되지 않는다. 에이전트는
 `AGENTS.md`나 등록된 스킬을 통해 정본 경로를 안내받으므로 문제되지 않지만, 직접 찾을 때는

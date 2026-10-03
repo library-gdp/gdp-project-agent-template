@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 #
 # Link the agent resources in .agent/ into the vendor-specific locations that
-# Claude Code and OpenCode read.
+# Claude Code, Codex and opencode read.
 #
 # .agent/ is the source of truth. The vendor directories only ever receive
 # directory junctions (or, for single files, a symbolic or hard link); this
@@ -20,20 +20,26 @@ $ErrorActionPreference = 'Stop'
 # ---------------------------------------------------------------------------
 
 $DirectoryLinks = @(
-    @{ Name = 'skills';   Source = '.agent/skills';   Target = '.claude/skills'    }
-    @{ Name = 'rules';    Source = '.agent/rules';    Target = '.claude/rules'     }
-    @{ Name = 'agents';   Source = '.agent/agents';   Target = '.claude/agents'    }
-    @{ Name = 'commands'; Source = '.agent/commands'; Target = '.claude/commands'  }
-    @{ Name = 'skills';   Source = '.agent/skills';   Target = '.opencode/skill'   }
-    @{ Name = 'commands'; Source = '.agent/commands'; Target = '.opencode/command' }
+    @{ Name = 'skills';   Source = '.agent/skills';   Target = '.claude/skills'     }
+    @{ Name = 'skills';   Source = '.agent/skills';   Target = '.agents/skills'     }
+    @{ Name = 'rules';    Source = '.agent/rules';    Target = '.claude/rules'      }
+    @{ Name = 'agents';   Source = '.agent/agents';   Target = '.claude/agents'     }
+    @{ Name = 'commands'; Source = '.agent/commands'; Target = '.claude/commands'   }
+    @{ Name = 'commands'; Source = '.agent/commands'; Target = '.opencode/commands' }
 )
 
-# Claude Code reads project-scoped MCP servers from .mcp.json at the project
-# root, in {"mcpServers": {...}} form. That is a single file rather than a
-# directory, so it cannot be a junction: junctions only ever point at
-# directories. It is linked file-to-file instead.
+# Single files cannot be directory junctions, because a junction only ever
+# points at a directory, so they are tracked separately. Both sources stay
+# vendor-neutral:
+#
+#   .mcp.json  Claude Code reads project-scoped MCP servers from this one file
+#              at the project root, in {"mcpServers": {...}} form. There is no
+#              .claude/mcp directory.
+#   CLAUDE.md  Claude Code v2.1.277+ reads AGENTS.md directly, but older
+#              versions need a CLAUDE.md. Linking the two keeps one source.
 $FileLinks = @(
-    @{ Name = 'mcp'; Source = '.agent/mcp/servers.json'; Target = '.mcp.json' }
+    @{ Name = 'mcp';          Source = '.agent/mcp/servers.json'; Target = '.mcp.json' }
+    @{ Name = 'instructions'; Source = 'AGENTS.md';               Target = 'CLAUDE.md' }
 )
 
 # ---------------------------------------------------------------------------
@@ -51,13 +57,13 @@ $script:Failures = 0
 function Write-Status {
     param([string]$Status, [string]$Name, [string]$Detail)
     $label = "[$Status]".PadRight(8)
-    Write-Host ("{0}{1} {2}" -f $label, $Name.PadRight(9), $Detail)
+    Write-Host ("{0}{1} {2}" -f $label, $Name.PadRight(12), $Detail)
 }
 
 function Write-Failure {
     param([string]$Name, [string]$Detail)
     $label = '[ERROR]'.PadRight(8)
-    Write-Host ("{0}{1} {2}" -f $label, $Name.PadRight(9), $Detail) -ForegroundColor Red
+    Write-Host ("{0}{1} {2}" -f $label, $Name.PadRight(12), $Detail) -ForegroundColor Red
     $script:Failures++
 }
 
@@ -213,8 +219,8 @@ function Set-FileLink {
 $TargetRelative could not be linked to $SourceRelative.
          A file symbolic link failed: $symlinkError
          A hard link failed: $($_.Exception.Message)
-         Claude Code requires project MCP configuration at the single file $TargetRelative, so this
-         mapping cannot use a directory junction. Enable Windows Developer Mode (Settings >
+         $TargetRelative is a single file, not a directory, so this mapping cannot use a
+         directory junction. Enable Windows Developer Mode (Settings >
          System > For developers) to allow unprivileged symbolic links, or keep $SourceRelative
          and $TargetRelative on the same NTFS volume so a hard link can be created. This script
          does not copy the file, because a copy would silently stop tracking $SourceRelative.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Link the agent resources in .agent/ into the vendor-specific locations that
-# Claude Code and OpenCode read.
+# Claude Code, Codex and opencode read.
 #
 # .agent/ is the source of truth. The vendor directories only ever receive
 # symbolic links; this script never copies, moves or deletes real data.
@@ -20,20 +20,26 @@ set -euo pipefail
 directory_links() {
   cat <<'MAP'
 skills|.agent/skills|.claude/skills
+skills|.agent/skills|.agents/skills
 rules|.agent/rules|.claude/rules
 agents|.agent/agents|.claude/agents
 commands|.agent/commands|.claude/commands
-skills|.agent/skills|.opencode/skill
-commands|.agent/commands|.opencode/command
+commands|.agent/commands|.opencode/commands
 MAP
 }
 
-# Claude Code reads project-scoped MCP servers from .mcp.json at the project
-# root, in {"mcpServers": {...}} form. That is a single file rather than a
-# directory, so it is linked file-to-file from .agent/mcp/servers.json.
+# Single files cannot be directory junctions on Windows, so they are tracked
+# separately. Both sources stay vendor-neutral:
+#
+#   .mcp.json  Claude Code reads project-scoped MCP servers from this one file
+#              at the project root, in {"mcpServers": {...}} form. There is no
+#              .claude/mcp directory.
+#   CLAUDE.md  Claude Code v2.1.277+ reads AGENTS.md directly, but older
+#              versions need a CLAUDE.md. Linking the two keeps one source.
 file_links() {
   cat <<'MAP'
 mcp|.agent/mcp/servers.json|.mcp.json
+instructions|AGENTS.md|CLAUDE.md
 MAP
 }
 
@@ -59,7 +65,7 @@ project_root="$(cd -- "$script_dir/.." && pwd -P)"
 failures=0
 
 report() {
-  printf '[%s]%s %-9s %s\n' "$1" "$(printf '%*s' $((6 - ${#1})) '')" "$2" "$3"
+  printf '[%s]%s %-12s %s\n' "$1" "$(printf '%*s' $((6 - ${#1})) '')" "$2" "$3"
 }
 
 report_error() {
