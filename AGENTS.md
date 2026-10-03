@@ -23,13 +23,19 @@ Data Architecture, Tech stacks, Wireframe, Storyboard — 은 현재 형상을 �
 
 ## 에이전트별 진입점
 
+`.agent/`가 에이전트 설정의 source of truth다. 각 에이전트 전용 경로는
+`script/setup-agent-links.sh`(Linux/macOS) 또는 `script/setup-agent-links.ps1`(Windows)이
+생성하는 링크이며, Git에서 제외된다. 설정 자체를 수정할 때는 `.agent/` 아래만 고친다.
+
 | 에이전트 | 진입점 |
 |---|---|
 | 모든 에이전트 | `.agent/skills/project-documentation/SKILL.md` (정본) |
-| Claude Code | 스킬 자동 인식 (`.claude/skills/` → 정본 symlink), 또는 `/doc-sync` |
+| Claude Code | 스킬 자동 인식 (`.claude/skills` → `.agent/skills`), 또는 `/doc-sync` |
 | Codex | 이 파일 + `.codex/prompts/doc-sync.md` (`/doc-sync`) |
-| OpenCode | 스킬 자동 인식 (`.opencode/skill/` → 정본 symlink), 또는 `/doc-sync` |
+| OpenCode | 스킬 자동 인식 (`.opencode/skill` → `.agent/skills`), 또는 `/doc-sync` |
 | 그 외 | 이 파일을 읽고 정본 경로를 직접 참조 |
 
-`.claude/skills/`와 `.opencode/skill/` 항목은 정본을 가리키는 symlink다. symlink를 따르지 않는 환경이라면
+링크가 아직 생성되지 않았거나 링크를 따르지 않는 환경이라면
 `.agent/skills/project-documentation/SKILL.md`를 직접 읽으면 된다.
+
+전체 mapping과 setup 방법은 `README.md`의 Setup 절에 있다.
