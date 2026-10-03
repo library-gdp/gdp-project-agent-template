@@ -137,18 +137,6 @@ local scope(`~/.claude.json`, 개인·현재 프로젝트)와 user scope(`~/.cla
 공유가 불가능하고, 링크는 각자 setup 스크립트로 만드는 local artifact다. `CLAUDE.md`도
 같은 이유로 제외하며, 공유되는 원본은 커밋되는 `AGENTS.md`다.
 
-`.mcp.json`은 `.gitignore`에 넣지 않는다. Claude Code가 project scope MCP 설정을 버전 관리로
-공유하도록 설계한 파일이라 Git에서 보이게 둔다.
-
-**단, 커밋하지 않는다.** setup을 실행하면 `.mcp.json` 링크가 생성되어 `git status`에 untracked로
-남는데, 그대로 두는 것이 이 프로젝트의 결정이다. 심링크를 커밋하면 POSIX 클론에서는 setup
-없이도 동작하지만, Windows 클론에서는 `core.symlinks`가 꺼져 있을 때(기본값) `.mcp.json`이
-경로 문자열이 담긴 일반 텍스트 파일로 풀린다. 그러면 Claude Code가 JSON 파싱에 실패하고,
-setup 스크립트는 실제 파일을 덮어쓰지 않는 규칙에 따라 `[ERROR]`로 거부해 수동 삭제가
-필요해진다. 권한 상승 없는 Windows 지원을 깨지 않기 위해 untracked 상태를 택했다.
-
-MCP 설정을 공유하려면 정본인 `.agent/mcp.json`을 수정해 커밋한다.
-
 ## 구조
 
 ```text
