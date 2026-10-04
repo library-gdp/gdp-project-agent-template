@@ -152,30 +152,3 @@ script/
   setup-agent-links.ps1                   # Windows PowerShell
 ```
 
-setup 스크립트가 생성하며 Git에서 제외되는 경로(gitignored):
-
-```text
-.claude/skills, .claude/rules, .claude/agents, .claude/commands
-.agents/skills
-.opencode/commands
-CLAUDE.md
-```
-
-`.mcp.json`도 setup 스크립트가 생성하지만 gitignore하지 않는다(위 Git 절 참고).
-
-`.claude/`, `.agents/`, `.opencode/`는 각 도구가 요구하는 고정 경로이므로 옮길 수 없다.
-규칙을 고칠 때는 `.agent/` 아래 정본과 `AGENTS.md`만 수정한다.
-
-`.agent/`는 숨은 디렉터리이므로 `grep`, `rg` 기본 설정에서는 검색되지 않는다. 에이전트는
-`AGENTS.md`나 등록된 스킬을 통해 정본 경로를 안내받으므로 문제되지 않지만, 직접 찾을 때는
-`rg --hidden`을 쓴다.
-
-## 수록된 규칙
-
-### 문서화 Rule (`.agent/skills/project-documentation`)
-
-프로젝트 문서 9종(PRD, Requirements, ADR, System/Application/Data Architecture, Tech stacks,
-Wireframe, Storyboard)에 대해 현재 형상 기준으로 새 문서 작성 / 최신화 / Deprecation 필요 여부를
-판정하고 작업을 trigger한다. 정보가 부족한 문서는 작성하지 않는다.
-
-문서 저장 위치와 각 문서의 작성 방법은 이 규칙의 범위가 아니다.
