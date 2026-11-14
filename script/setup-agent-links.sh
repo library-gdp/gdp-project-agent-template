@@ -37,10 +37,15 @@ MAP
 #              .agent/mcp.json rather than a directory.
 #   CLAUDE.md  Claude Code v2.1.277+ reads AGENTS.md directly, but older
 #              versions need a CLAUDE.md. Linking the two keeps one source.
+#   guardrails Permission deny rules rendered by script/generate-guardrails.sh
+#              from .agent/guardrails/protected-branches, one file per agent.
 file_links() {
   cat <<'MAP'
 mcp|.agent/mcp.json|.mcp.json
 instructions|AGENTS.md|CLAUDE.md
+guardrails|.agent/guardrails/claude-settings.json|.claude/settings.json
+guardrails|.agent/guardrails/opencode.json|opencode.json
+guardrails|.agent/guardrails/codex.rules|.codex/rules/guardrails.rules
 MAP
 }
 

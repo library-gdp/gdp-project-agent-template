@@ -1,0 +1,13 @@
+# Branches that coding agents must never push to directly.
+#
+# One branch name per line. Blank lines and lines starting with # are ignored.
+# A name may contain `*` as a glob, for example `release/*`. Claude Code and
+# opencode honour the glob; Codex rules only match literal tokens and skip it.
+#
+# After editing, regenerate the agent permission files and commit the result:
+#   script/generate-guardrails.sh
+dev
+qa
+prod
+main
+release

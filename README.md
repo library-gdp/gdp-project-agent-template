@@ -36,6 +36,9 @@ Agent resource setup
 [OK]     commands     .opencode/commands -> .agent/commands
 [OK]     mcp          .mcp.json -> .agent/mcp.json
 [OK]     instructions CLAUDE.md -> AGENTS.md
+[OK]     guardrails   .claude/settings.json -> .agent/guardrails/claude-settings.json
+[OK]     guardrails   opencode.json -> .agent/guardrails/opencode.json
+[OK]     guardrails   .codex/rules/guardrails.rules -> .agent/guardrails/codex.rules
 
 Done.
 ```
@@ -54,6 +57,9 @@ Done.
 | `.agent/commands` | `.opencode/commands` | opencode |
 | `.agent/mcp.json` | `.mcp.json` | Claude Code (project MCP) |
 | `AGENTS.md` | `CLAUDE.md` | Claude Code v2.1.277 미만 |
+| `.agent/guardrails/claude-settings.json` | `.claude/settings.json` | Claude Code |
+| `.agent/guardrails/opencode.json` | `opencode.json` | opencode |
+| `.agent/guardrails/codex.rules` | `.codex/rules/guardrails.rules` | Codex |
 
 리소스를 추가할 때는 두 스크립트의 mapping 테이블에 각각 한 줄만 추가한다
 (`directory_links()` / `$DirectoryLinks`).
@@ -137,6 +143,69 @@ local scope(`~/.claude.json`, 개인·현재 프로젝트)와 user scope(`~/.cla
 공유가 불가능하고, 링크는 각자 setup 스크립트로 만드는 local artifact다. `CLAUDE.md`도
 같은 이유로 제외하며, 공유되는 원본은 커밋되는 `AGENTS.md`다.
 
+## Git guardrails
+
+에이전트가 다음을 하지 못하도록 각 에이전트의 **tool permission deny rule**로 막는다.
+
+1. 보호 브랜치에 직접 push — 기본값 `dev`, `qa`, `prod`, `main`, `release`
+2. PR merge
+
+deny rule은 모델의 판단과 무관하게 harness가 명령을 실행하기 전에 패턴으로 차단하므로
+결정론적이다. Claude Code에서는 `bypassPermissions`·`auto` 모드에서도 적용된다.
+
+### 보호 브랜치 변경
+
+정본은 `.agent/guardrails/protected-branches`(한 줄에 하나, `#` 주석)다. 수정 후 생성
+스크립트를 실행하고 결과 파일을 함께 커밋한다. Windows에서는 Git Bash로 실행한다.
+
+```bash
+./script/generate-guardrails.sh
+```
+
+생성 결과(`.agent/guardrails/` 아래 3개 파일)는 손으로 고치지 않는다. 다시 생성하면 덮어쓴다.
+`release/*`처럼 `*` glob을 쓸 수 있으나 Codex는 literal token만 매칭하므로 glob 항목을 건너뛴다.
+
+### 차단 범위
+
+| 차단 대상 | Claude Code | opencode | Codex |
+|---|---|---|---|
+| `git push <remote> <보호 브랜치>` (`+b`, `src:b`, `:b`, `refs/heads/b`, flag 포함) | O | O | O (remote는 `origin`·`upstream`, 앞쪽 flag 3개까지) |
+| `git -C <dir> push …`, `git -c k=v push …` | O | O | X |
+| 대상이 명령에 드러나지 않는 push: `git push`, `git push origin`, `… HEAD`, `… @`, `--all`, `--branches`, `--mirror` | O | O | `HEAD`·`@`·`--all` 등만 O, bare `git push`/`git push origin`은 X |
+| `gh api`로 보호 브랜치 ref·contents 갱신, `gh api …/merges` | O | O | X |
+| `gh pr merge`, `glab mr merge` | O | O | O |
+| `gh api`의 PR merge REST·GraphQL (`pulls/*/merge`, `mergePullRequest`, `enablePullRequestAutoMerge`) | O | O | X |
+| MCP의 PR merge tool (`mcp__*__*merge_pull_request*`, `mcp__*__*auto_merge*`) | O | X | X |
+
+대상 브랜치가 명령에 드러나지 않는 push는 현재 브랜치에 따라 보호 브랜치로 갈 수 있지만
+패턴으로는 현재 브랜치를 알 수 없다. 그래서 Claude Code·opencode에서는 이런 push를 모두
+막고, push는 `git push -u origin <feature-branch>`처럼 대상을 명시하게 한다.
+
+### 한계
+
+permission rule은 에이전트가 쓴 **명령 문자열**을 매칭하므로 같은 동작의 다른 표현까지 막는
+보안 경계가 아니다. 다음은 막지 못한다.
+
+- `sh -c '…'`, `/usr/bin/git push …`, 스크립트·Makefile·git alias 안에서의 push
+- 따옴표로 감싼 브랜치 이름(`git push origin "main"`), `origin` 외 remote 이름만 쓴 push
+- Codex: 위 표에서 X인 항목. prefix rule은 literal token prefix만 매칭하고 명령의 끝을 지정할 수 없다
+- opencode: MCP tool 호출
+
+실제 보호는 원격 저장소의 branch protection / ruleset(직접 push 금지, PR 필수)으로 보장하고,
+이 guardrail은 에이전트가 그 이전에 멈추도록 하는 1차 방어선으로 쓴다.
+
+### 에이전트별 주의
+
+- **Claude Code** — `.claude/settings.json`은 생성 파일로 가는 링크다. 개인 permission은
+  `.claude/settings.local.json`에 둔다. `/permissions`에서 project 설정에 rule을 추가하면 링크를
+  따라 생성 파일이 바뀌고 다음 생성 때 사라진다.
+- **opencode** — 마지막으로 매칭된 rule이 이긴다. 다른 설정에서 더 넓은 `allow`를 이 rule들보다
+  뒤에 추가하면 deny가 무력화된다.
+- **Codex** — project의 `.codex/` layer는 **신뢰된 프로젝트**에서만 로드된다. 처음 실행할 때
+  프로젝트를 trust해야 `.codex/rules/guardrails.rules`가 적용된다. 확인:
+  `codex execpolicy check --rules .codex/rules/guardrails.rules git push origin main`
+  → `"decision": "forbidden"`.
+
 ## 구조
 
 ```text
@@ -147,8 +216,14 @@ AGENTS.md                                 # 모든 에이전트 공통 진입점
     references/document-types.md          # 문서 9종별 판정 기준
   commands/doc-sync.md                    # /doc-sync
   mcp.json                                # MCP 설정 정본 (빈 상태로 포함)
+  guardrails/
+    protected-branches                    # 보호 브랜치 목록 정본
+    claude-settings.json                  # 생성됨: Claude Code permission
+    opencode.json                         # 생성됨: opencode permission
+    codex.rules                           # 생성됨: Codex execpolicy rule
 script/
   setup-agent-links.sh                    # Linux / macOS
   setup-agent-links.ps1                   # Windows PowerShell
+  generate-guardrails.sh                  # guardrail permission 파일 생성
 ```
 

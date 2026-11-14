@@ -38,9 +38,14 @@ $DirectoryLinks = @(
 #              .agent/mcp.json rather than a directory.
 #   CLAUDE.md  Claude Code v2.1.277+ reads AGENTS.md directly, but older
 #              versions need a CLAUDE.md. Linking the two keeps one source.
+#   guardrails Permission deny rules rendered by script/generate-guardrails.sh
+#              from .agent/guardrails/protected-branches, one file per agent.
 $FileLinks = @(
-    @{ Name = 'mcp';          Source = '.agent/mcp.json'; Target = '.mcp.json' }
-    @{ Name = 'instructions'; Source = 'AGENTS.md';       Target = 'CLAUDE.md' }
+    @{ Name = 'mcp';          Source = '.agent/mcp.json';                        Target = '.mcp.json'                     }
+    @{ Name = 'instructions'; Source = 'AGENTS.md';                              Target = 'CLAUDE.md'                     }
+    @{ Name = 'guardrails';   Source = '.agent/guardrails/claude-settings.json'; Target = '.claude/settings.json'         }
+    @{ Name = 'guardrails';   Source = '.agent/guardrails/opencode.json';        Target = 'opencode.json'                 }
+    @{ Name = 'guardrails';   Source = '.agent/guardrails/codex.rules';          Target = '.codex/rules/guardrails.rules' }
 )
 
 # ---------------------------------------------------------------------------
