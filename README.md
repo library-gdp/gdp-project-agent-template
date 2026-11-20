@@ -22,11 +22,65 @@ chmod +x script/setup-agent-links.sh   # 최초 1회, 실행 권한이 없는 �
 .\script\setup-agent-links.ps1
 ```
 
+### 에이전트 선택
+
+터미널에서 실행하면 세팅할 에이전트를 고르는 체크리스트가 먼저 뜬다. 여러 에이전트를 동시에
+선택할 수 있다. 처음에는 모두 선택되어 있으므로 Enter만 누르면 세 에이전트를 모두 세팅한다.
+
+```text
+Select the agents to set up (any number):
+  Up/Down move  Space toggle  a all/none  Enter confirm  q cancel
+
+  > [x] Claude Code   .claude/, .mcp.json, CLAUDE.md
+    [x] Codex         .agents/skills, .codex/rules
+    [x] OpenCode      .agents/skills, .opencode/commands, opencode.json
+```
+
+| 키 | 동작 |
+|---|---|
+| `↑` / `↓`, `k` / `j` | 커서 이동 |
+| `Space` | 커서 위치의 에이전트 선택·해제 |
+| `a` | 전체 선택 / 전체 해제 |
+| `Enter` | 확정. 하나도 선택하지 않으면 확정되지 않고 안내 문구를 보여 준다 |
+| `q`, `Esc`, `Ctrl-C` | 취소. 아무것도 바꾸지 않고 종료한다 (exit code 1, `Ctrl-C`는 130) |
+
+체크리스트 없이 대상을 지정하려면 옵션을 쓴다. 에이전트 id는 `claude`, `codex`, `opencode`다.
+
+```bash
+./script/setup-agent-links.sh --agents claude,codex   # 줄여서 -a claude,codex, 여러 번 쓰면 합친다
+./script/setup-agent-links.sh --all
+./script/setup-agent-links.sh --help
+```
+
+```powershell
+.\script\setup-agent-links.ps1 -Agents claude,codex
+.\script\setup-agent-links.ps1 -All
+.\script\setup-agent-links.ps1 -Help
+```
+
+터미널이 없으면 체크리스트를 띄우지 않고 모든 에이전트를 세팅하며, 출력의 `agents:` 아래에
+그 사실을 표시한다. 터미널 판정 기준은 다음과 같다.
+
+- **Bash** — stdin과 stderr가 모두 터미널이고, `TERM`이 설정되어 있으며 `dumb`가 아니어야 한다.
+  체크리스트는 stderr에 그리므로 stdout을 리다이렉트해도 체크리스트가 뜨고, stdout에는 아래
+  결과만 남는다.
+- **PowerShell** — 입력과 출력이 모두 리다이렉트되지 않았고 `-NonInteractive`
+  (`--noninteractive`)로 실행하지 않았어야 한다. Linux·macOS의 pwsh에서는 Bash와 같이 `TERM`도
+  설정되어 있고 `dumb`가 아니어야 한다. 세션 안의 `*>`·`6>` 리다이렉트는 판정에 영향이 없고,
+  체크리스트는 그 경우에도 콘솔에 그린다.
+
+CI, 파이프·리다이렉트, 대부분의 코딩 에이전트 셸이 "터미널 없음"에 해당한다. 반대로
+pseudo-terminal을 할당하는 자동화(`docker run -t`, `ssh -t` 등)에서는 체크리스트가 뜬 채 키 입력을
+기다리므로 `--all` / `-All` 또는 `--agents` / `-Agents`를 넘긴다.
+
+Bash 스크립트는 macOS 기본 bash 3.2에서도 동작한다.
+
 출력 예:
 
 ```text
 Agent resource setup
   project root: /home/you/gdp-project-agent-template
+  agents:       Claude Code, Codex, OpenCode
 
 [OK]     skills       .claude/skills -> .agent/skills
 [OK]     skills       .agents/skills -> .agent/skills
@@ -44,30 +98,36 @@ Done.
 ```
 
 몇 번을 실행해도 결과가 같다(idempotent). 두 번째 실행부터는 `already points to`로 보고한다.
+나중에 다른 에이전트를 추가로 세팅하려면 다시 실행해 그 에이전트를 선택하면 된다.
 
 ### Mapping
 
-| Source | Target | 이 경로를 읽는 에이전트 |
-|---|---|---|
-| `.agent/skills` | `.claude/skills` | Claude Code, opencode |
-| `.agent/skills` | `.agents/skills` | Codex, opencode |
-| `.agent/rules` | `.claude/rules` | Claude Code |
-| `.agent/agents` | `.claude/agents` | Claude Code (subagents) |
-| `.agent/commands` | `.claude/commands` | Claude Code |
-| `.agent/commands` | `.opencode/commands` | opencode |
-| `.agent/mcp.json` | `.mcp.json` | Claude Code (project MCP) |
-| `AGENTS.md` | `CLAUDE.md` | Claude Code v2.1.277 미만 |
-| `.agent/guardrails/claude-settings.json` | `.claude/settings.json` | Claude Code |
-| `.agent/guardrails/opencode.json` | `opencode.json` | opencode |
-| `.agent/guardrails/codex.rules` | `.codex/rules/guardrails.rules` | Codex |
+링크는 "생성 조건" 열의 에이전트 중 하나 이상을 선택했을 때만 만든다.
 
-리소스를 추가할 때는 두 스크립트의 mapping 테이블에 각각 한 줄만 추가한다
-(`directory_links()` / `$DirectoryLinks`).
+| Source | Target | 생성 조건 (선택한 에이전트) | 이 경로를 읽는 에이전트 |
+|---|---|---|---|
+| `.agent/skills` | `.claude/skills` | Claude Code | Claude Code, opencode |
+| `.agent/skills` | `.agents/skills` | Codex 또는 OpenCode | Codex, opencode |
+| `.agent/rules` | `.claude/rules` | Claude Code | Claude Code |
+| `.agent/agents` | `.claude/agents` | Claude Code | Claude Code (subagents) |
+| `.agent/commands` | `.claude/commands` | Claude Code | Claude Code |
+| `.agent/commands` | `.opencode/commands` | OpenCode | opencode |
+| `.agent/mcp.json` | `.mcp.json` | Claude Code | Claude Code (project MCP) |
+| `AGENTS.md` | `CLAUDE.md` | Claude Code | Claude Code v2.1.277 미만 |
+| `.agent/guardrails/claude-settings.json` | `.claude/settings.json` | Claude Code | Claude Code |
+| `.agent/guardrails/opencode.json` | `opencode.json` | OpenCode | opencode |
+| `.agent/guardrails/codex.rules` | `.codex/rules/guardrails.rules` | Codex | Codex |
+
+리소스를 추가할 때는 두 스크립트의 mapping 테이블에 각각 한 줄만 추가하고, 그 링크가 필요한
+에이전트 id를 함께 적는다 (`directory_links()`의 `name|agents|source|target` /
+`$DirectoryLinks`의 `Agents`). 에이전트 목록 자체는 Bash의 `agent_ids` 등 배열과
+PowerShell의 `$AgentCatalog`에 있다.
 
 Target 경로는 각 에이전트의 공식 탐색 경로를 조사해 정한 것이다.
 
 - **Skills** — Claude Code는 `.claude/skills`, Codex는 `.agents/skills`를 스캔한다. opencode는
   `.opencode/skills`, `.claude/skills`, `.agents/skills`를 모두 스캔하므로 별도 링크가 필요 없다.
+  OpenCode만 선택해도 `.agents/skills`를 만들므로 opencode는 항상 스킬을 읽는다.
   세 에이전트 모두 `SKILL.md` + `name`/`description` frontmatter 형식이 같고 symlink를 따른다.
 - **Rules / Subagents** — Claude Code 전용 기능이다. `.claude/rules`는 `.md`를 재귀 탐색하며
   `paths` frontmatter로 특정 파일에만 적용할 수 있다. subagent는 `.claude/agents/*.md`다.
@@ -122,8 +182,13 @@ local scope(`~/.claude.json`, 개인·현재 프로젝트)와 user scope(`~/.cla
 - **잘못된 링크는 링크만 교체한다.** 다른 곳을 가리키거나 끊어진 링크는 제거 후 재생성하며,
   링크가 가리키던 데이터에는 영향이 없다. `rm -rf`, `Remove-Item -Recurse`는 사용하지 않는다.
 - **리소스는 독립적으로 처리한다.** `.agent/rules`가 없어도 나머지 설정은 정상 진행된다.
-- **`.agent` 자체가 없으면** 설정 오류로 보고 non-zero exit code로 종료한다.
-- `.claude/`가 없으면 생성하되 기존 내용은 보존한다.
+- **`.agent` 자체가 없으면** 설정 오류로 보고 non-zero exit code로 종료한다. 체크리스트보다 먼저
+  확인하므로 선택을 마친 뒤에 실패하는 일은 없다.
+- **선택하지 않은 에이전트의 링크는 건드리지 않는다.** 이전 실행에서 만든 링크도 삭제하지 않는다.
+  더 이상 필요 없으면 링크를 직접 지운다(`rm .codex/rules/guardrails.rules`처럼 링크만 지우면
+  원본은 남는다). Windows의 directory junction은 `cmd /c rmdir .opencode\commands`로 지우고,
+  `Remove-Item -Recurse`는 쓰지 않는다 — junction이 가리키는 원본 내용까지 지울 수 있다.
+- Claude Code를 선택했을 때 `.claude/`가 없으면 생성하되 기존 내용은 보존한다.
 
 ### Windows 참고
 
