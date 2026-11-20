@@ -1,6 +1,6 @@
 ---
 name: project-documentation
-description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(PRD, Requirements, ADR, System/Application/Data Architecture, Tech stacks, Wireframe, Storyboard)를 새로 작성할지, 최신화할지, Deprecation할지 판단하고 그 작업을 트리거한다. Use when a design decision is finalized; when scope, requirements, tech stack, architecture, data model, or screens change; when a new project is initialized; before closing a milestone or PR that changed any of those; or when the user asks to write, review, refresh, sync, or clean up project documentation ("문서화", "문서 최신화", "문서 점검", "are the docs up to date"). 정보가 부족한 문서는 억지로 작성하지 않고 "작성 불가"로 보고한다.
+description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(PRD, Requirements, ADR, System/Application/Data Architecture, Tech stacks, Wireframe, Storyboard)를 새로 작성할지, 최신화할지, Deprecation할지 판단하고 그 작업을 트리거한다. Use when a design decision is finalized; when scope, requirements, tech stack, architecture, data model, or screens change; when a new project is initialized; before closing a milestone that changed any of those; or when the user asks to write, review, refresh, sync, or clean up project documentation ("문서화", "문서 최신화", "문서 점검", "are the docs up to date"). 정보가 부족한 문서는 억지로 작성하지 않고 "작성 불가"로 보고한다.
 ---
 
 # 프로젝트 문서화 Rule
@@ -119,4 +119,4 @@ description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(P
 - 설계 결정이 확정된 직후
 - 기술 스택, 아키텍처, 스키마, 화면, 요구사항을 바꾸는 작업을 완료한 직후
 - 새 프로젝트를 초기화할 때
-- 마일스톤이나 PR을 닫기 전
+- 마일스톤을 닫기 전
