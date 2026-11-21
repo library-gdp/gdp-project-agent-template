@@ -111,7 +111,7 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 local scope(`~/.claude.json`, 개인·현재 프로젝트)와 user scope(`~/.claude.json`, 개인·모든
 프로젝트)는 홈 디렉터리에 저장되므로 이 파일의 범위를 벗어난다.
 
-### Guardrail (`.agent/settings.json`, `.agent/hooks/guard.mjs`)
+### Guardrail (`.agent/settings.json`, `.agent/hooks/*.mjs`)
 
 Claude Code project settings로 다음 작업을 막는다.
 
@@ -125,7 +125,11 @@ Claude Code project settings로 다음 작업을 막는다.
 그 외 commit·push(보호 브랜치가 아닌 브랜치)와 PR 생성은 허용한다.
 
 - `permissions.deny`는 흔한 표기를 막는 1차 방어선이다. Bash prefix 규칙은 `git -C . push`,
-  `HEAD:main` 같은 변형으로 우회되므로, `PreToolUse` 훅 `guard.mjs`가 명령을 파싱해 최종 판정한다.
+  `HEAD:main` 같은 변형으로 우회되므로, `PreToolUse` 훅이 명령을 파싱해 최종 판정한다.
+  훅은 관심사별로 나뉜다.
+  - `branch-guard.mjs`: 보호 브랜치 push, PR merge, amend commit / force push
+  - `setting-file-guard.mjs`: setting 파일 수정
+  - `lib/common.mjs`: 두 훅이 공유하는 입력 파싱·명령 토큰화 유틸리티
   보호 브랜치 판정에는 refspec의 destination과, refspec이 없을 때 현재 브랜치·upstream을 쓴다.
 - setting 파일은 Edit/Write 도구는 물론 Bash에서도 읽기 전용이다(`cat`, `jq`, `git diff`,
   `git add`, `git commit` 등 읽기·커밋만 허용). 에이전트는 이 규칙 자체를 바꿀 수 없으므로,
@@ -174,7 +178,9 @@ AGENTS.md                                 # 모든 에이전트 공통 진입점
   commands/doc-sync.md                    # /doc-sync
   mcp.json                                # MCP 설정 정본 (빈 상태로 포함)
   settings.json                           # Claude Code project settings (guardrail)
-  hooks/guard.mjs                         # PreToolUse guard 훅
+  hooks/branch-guard.mjs                  # PreToolUse 훅: 보호 브랜치·PR merge·amend/force push
+  hooks/setting-file-guard.mjs            # PreToolUse 훅: setting 파일 수정 차단
+  hooks/lib/common.mjs                    # guard 훅 공용 유틸리티
 script/
   setup-agent-links.sh                    # Linux / macOS
   setup-agent-links.ps1                   # Windows PowerShell

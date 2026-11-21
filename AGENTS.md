@@ -11,4 +11,4 @@
 - setting 파일(`.claude/settings*.json`, `.agent/settings.json`, `.agent/hooks/`)은 수정하지 않는다.
 - 위 항목 외의 commit·push(`.agent/` 이하 포함)는 허용한다.
 
-Claude Code에서는 `.agent/settings.json`과 `.agent/hooks/guard.mjs`가 이를 강제한다.
+Claude Code에서는 `.agent/settings.json`과 `.agent/hooks/`의 guard 훅(`branch-guard.mjs`, `setting-file-guard.mjs`)이 이를 강제한다.
