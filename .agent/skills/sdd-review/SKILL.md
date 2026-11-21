@@ -26,8 +26,11 @@ description: SDD 워크플로우의 6단계(Review). 모든 인수 조건이 충
    node .agent/skills/sdd-workflow/scripts/timeline.mjs mark "$TASK_DIR" review <N> start
    ```
 2. 검토 대상을 모아라.
-   - `EXPLORE.md`의 기준 커밋을 `<base>`로 두고, `git diff <base> -- . ':!runs'`와 `git status --short`(추적되지 않은 새 파일 포함)로 코드 변경 전체를 확인하라.
-   - 이번 작업 디렉토리 밖의 `runs/` 기록이 변경되지 않았는지 확인하라: `git diff <base> --stat -- runs ":!$TASK_DIR"`의 출력이 비어 있어야 한다.
+   - `EXPLORE.md`의 기준 커밋을 `<base>`로 두고, `git diff <base>`와 `git status --short`(추적되지 않은 새 파일 포함)로 코드 변경 전체를 확인하라.
+   - 이번 작업 디렉토리 밖의 `runs/` 기록이 변경되지 않았는지 확인하라. `runs/`는 Git에서 제외되므로 diff 대신 수정 시각으로 본다. 다음 명령의 출력이 비어 있어야 한다(타임라인 첫 기록 이후 수정된 다른 작업의 파일).
+     ```bash
+     find runs -path "$TASK_DIR" -prune -o -type f -newermt "$(head -n 1 "$TASK_DIR/.timeline.tsv" | cut -f 1 | sed 's/\.[0-9]*Z$/Z/')" -print
+     ```
    - `ACCEPTANCE_CRITERIA.md`, `ACCEPTANCE_TEST_PLAN.md`, `PLAN.md`, Architecture 문서, `TEST_REPORT.md`의 `## Iteration N` 섹션을 읽어라.
 3. **인수 조건 충족 검토**: AC마다 코드와 테스트 증거를 대조해 **충족 / 미충족 / 판단 불가**를 판정하라. 테스트가 통과했더라도 테스트가 AC를 제대로 검증하지 못했으면 그 점을 지적하라.
 4. **인수 테스트 검토**

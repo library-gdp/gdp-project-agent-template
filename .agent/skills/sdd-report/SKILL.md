@@ -21,7 +21,7 @@ description: SDD 워크플로우의 마지막 단계(8단계, Report). 전체 �
    node .agent/skills/sdd-workflow/scripts/timeline.mjs mark "$TASK_DIR" report - start
    ```
 2. 모든 산출물을 읽고 요약할 내용을 모아라. 최종 판정과 iteration 수는 `EVALUATION.md`의 "Iteration 이력"에서, 최종 AC 판정은 마지막 iteration 섹션에서 가져온다.
-3. `git diff --stat <base> -- . ':!runs'`와 `git status --short`로 변경 파일 목록을 만들어라. `<base>`는 `EXPLORE.md`의 기준 커밋이다.
+3. `git diff --stat <base>`와 `git status --short`로 변경 파일 목록을 만들어라. `<base>`는 `EXPLORE.md`의 기준 커밋이다.
 4. 아래 템플릿으로 `$TASK_DIR/REPORT.md`를 작성하라. "수행 시간 및 토큰 사용량" 섹션은 비워 두어라.
 5. 타임라인에 Report 종료를 기록하고 집계를 실행해, 출력을 "수행 시간 및 토큰 사용량" 섹션에 그대로 붙여라.
    ```bash
@@ -29,9 +29,7 @@ description: SDD 워크플로우의 마지막 단계(8단계, Report). 전체 �
    node .agent/skills/sdd-workflow/scripts/timeline.mjs summary "$TASK_DIR"
    ```
    집계 이후 수행하는 커밋·push·PR 생성의 시간과 토큰은 포함되지 않는다. 이 사실은 집계 출력의 안내 문구에 이미 들어 있다.
-6. **커밋**: `conventional-commit` 스킬을 호출해 커밋하라. 목적별로 나누어라.
-   - 코드 변경: 작업 성격에 맞는 type(`feat`, `fix`, `refactor` 등)
-   - 워크플로우 기록: `docs(runs): <작업 요약> SDD 기록 추가` — `$TASK_DIR` 전체(`.timeline.tsv`, `03.implementation/.gitkeep` 포함)
+6. **커밋**: `conventional-commit` 스킬을 호출해 코드 변경을 커밋하라. type은 작업 성격에 맞게(`feat`, `fix`, `refactor` 등) 고르고, 목적이 여럿이면 목적별로 나누어라. `runs/`는 Git에서 제외되므로 커밋하지 않는다.
 7. **push**: `git push -u origin <작업 브랜치>`로 push하라. 거부되면 강제 push하지 말고 원인을 사용자에게 알려라.
 8. **PR 생성**
    - base 브랜치는 `EXPLORE.md`에 기록한 분기 원점 브랜치다. 기존 브랜치에서 작업을 이어서 해 분기 원점이 없으면 원격 기본 브랜치를 base로 한다.
@@ -101,10 +99,8 @@ description: SDD 워크플로우의 마지막 단계(8단계, Report). 전체 �
 - <주요 변경 목록>
 
 ## 테스트
-- 인수 테스트 <n>/<n> 통과 ([TEST_REPORT.md](<저장소 기준 경로>))
-
-## SDD 기록
-- [REPORT.md](<저장소 기준 경로>) — 단계별 산출물 링크, 수행 시간, 토큰 사용량 포함
+- 인수 테스트 <n>/<n> 통과
+<AT별 결과 표 또는 실패·차단 케이스 요약>
 
 <현재 세션의 PR attribution 문구>
 ```
@@ -112,5 +108,5 @@ description: SDD 워크플로우의 마지막 단계(8단계, Report). 전체 �
 ## 완료 조건
 
 - `REPORT.md`가 단계별 요약, AC 최종 결과, 변경 사항, 남은 과제, 수행 시간, 토큰 사용량을 담고 있다.
-- 코드 변경과 워크플로우 기록이 목적별 Conventional Commits로 나뉘어 커밋되고 push되었다.
+- 코드 변경이 Conventional Commits로 커밋되고 push되었다. `runs/`는 커밋되지 않았다.
 - PR이 생성되었거나 기존 PR이 갱신되었고, 그 URL을 사용자에게 보고했다.

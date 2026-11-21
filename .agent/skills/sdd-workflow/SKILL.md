@@ -14,7 +14,7 @@ description: 사용자가 Spec Driven Development(SDD), SDD 워크플로우, 스
 | 1   | Explore / Analysis | `sdd-explore`           | `00.explore/`           | `EXPLORE.md`                                                        |
 | 2   | Plan               | `sdd-plan`              | `01.plan/`              | `PLAN.md`, `ACCEPTANCE_CRITERIA.md`, `ACCEPTANCE_TEST_PLAN.md`      |
 | 3   | Architecture       | `sdd-architecture`      | `02.architecture/`      | `SOFTWARE_ARCHITECTURE.md`, `DATA_ARCHITECTURE.md`, `FLOW_CHART.md` |
-| 4   | Implementation     | `sdd-implementation`    | `03.implementation/`    | 코드 자체 (디렉토리만 생성 X)                                                  |
+| 4   | Implementation     | `sdd-implementation`    | `03.implementation/`    | 코드 자체 (빈 디렉토리만 생성)                                                  |
 | 5   | Test               | `sdd-test`              | `04.test/`              | `TEST_REPORT.md`, `evidence/` (UI가 있을 때만)                           |
 | 6   | Review             | `sdd-review`            | `05.review/`            | `REVIEW.md`                                                         |
 | 7   | Verification Gate  | `sdd-verification-gate` | `06.verification_gate/` | `EVALUATION.md`                                                     |
@@ -46,6 +46,7 @@ description: 사용자가 Spec Driven Development(SDD), SDD 워크플로우, 스
   - 해당 run이 진행되는 동안에만 각 단계 스킬의 절차에 따라 쓴다(Test·Review는 iteration 섹션 추가, Architecture는 본문 수정과 "변경 이력" 추가).
   - **끝난 run의 산출물은 변경하지 않는다.** 과거 기록이 현재 코드·설계와 맞지 않더라도 고치거나 지우지 마라. 기록은 그 시점의 사실로 남는 것이 목적이다.
   - 다른 작업의 `runs/` 디렉토리를 읽는 것은 괜찮지만 수정하지 마라.
+  - `runs/`는 `.gitignore`로 Git에서 제외되는 로컬 기록이다. 커밋하지 마라. PR 본문처럼 저장소 밖에서 볼 문서에서 `runs/` 아래 파일을 링크하지 마라.
 - **중앙 문서 — `docs/`**: 프로젝트가 현재 어떻게 되어 있는지 설명하는 문서다. 지속적으로 변경·개선·최신화되는 대상이다.
   - 워크스페이스 루트의 `docs/` 아래에 두고 SCM(git)으로 버전을 관리한다.
   - 대부분 마크다운이고, 필요하면 다른 형식의 문서도 둘 수 있다.

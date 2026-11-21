@@ -18,9 +18,9 @@ description: SDD 워크플로우의 4단계(Implementation). PLAN.md의 단위 �
 
 ## 절차
 
-1. `$TASK_DIR/03.implementation/`을 만들고(이미 있으면 그대로 둔다) 빈 디렉토리가 git에 남도록 `.gitkeep`을 두어라. 타임라인을 기록하라.
+1. `$TASK_DIR/03.implementation/`을 만들고(이미 있으면 그대로 둔다) 타임라인을 기록하라.
    ```bash
-   mkdir -p "$TASK_DIR/03.implementation" && touch "$TASK_DIR/03.implementation/.gitkeep"
+   mkdir -p "$TASK_DIR/03.implementation"
    node .agent/skills/sdd-workflow/scripts/timeline.mjs mark "$TASK_DIR" implementation <N> start
    ```
 2. 입력 문서를 읽어라. 인수 조건과 아키텍처 결정을 구현의 기준으로 삼아라.
