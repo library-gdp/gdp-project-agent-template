@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "deny": [
+      "Bash(git push * main)",
+      "Bash(git push * main *)",
+      "Bash(git push *:main)",
+      "Bash(git push *:main *)",
+      "Bash(git push *:refs/heads/main*)",
+      "Bash(git push * prod)",
+      "Bash(git push * prod *)",
+      "Bash(git push *:prod)",
+      "Bash(git push *:prod *)",
+      "Bash(git push *:refs/heads/prod*)",
+      "Bash(git push * qa)",
+      "Bash(git push * qa *)",
+      "Bash(git push *:qa)",
+      "Bash(git push *:qa *)",
+      "Bash(git push *:refs/heads/qa*)",
+      "Bash(git push * stg)",
+      "Bash(git push * stg *)",
+      "Bash(git push *:stg)",
+      "Bash(git push *:stg *)",
+      "Bash(git push *:refs/heads/stg*)",
+      "Bash(git push * dev)",
+      "Bash(git push * dev *)",
+      "Bash(git push *:dev)",
+      "Bash(git push *:dev *)",
+      "Bash(git push *:refs/heads/dev*)",
+      "Bash(git push * develop)",
+      "Bash(git push * develop *)",
+      "Bash(git push *:develop)",
+      "Bash(git push *:develop *)",
+      "Bash(git push *:refs/heads/develop*)",
+      "Bash(git push * release)",
+      "Bash(git push * release *)",
+      "Bash(git push *:release)",
+      "Bash(git push *:release *)",
+      "Bash(git push *:refs/heads/release*)",
+      "Bash(git push --force*)",
+      "Bash(git push * --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
+      "Bash(git push --mirror*)",
+      "Bash(git push * --mirror*)",
+      "Bash(git push --all*)",
+      "Bash(git push * --all*)",
+      "Bash(git commit --amend*)",
+      "Bash(git commit * --amend*)",
+      "Bash(gh pr merge*)",
+      "Bash(gh api *pulls/*/merge*)",
+      "Edit(.claude/settings.json)",
+      "Edit(.claude/settings.local.json)",
+      "Edit(.agent/settings.json)",
+      "Edit(.agent/hooks/**)",
+      "Edit(**/.claude/settings.json)",
+      "Edit(**/.claude/settings.local.json)",
+      "Edit(**/.agent/settings.json)",
+      "Edit(**/.agent/hooks/**)",
+      "Edit(~/.claude/settings.json)",
+      "Edit(~/.claude/settings.local.json)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.agent/hooks/guard.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

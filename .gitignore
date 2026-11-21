@@ -10,6 +10,7 @@
 /.claude/commands
 /.agents/skills
 /.opencode/commands
+/.claude/settings.json
 
 # Claude Code v2.1.277+ reads AGENTS.md directly; older versions need this
 # link to it.

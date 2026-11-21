@@ -35,6 +35,7 @@ Agent resource setup
 [OK]     commands     .claude/commands -> .agent/commands
 [OK]     commands     .opencode/commands -> .agent/commands
 [OK]     mcp          .mcp.json -> .agent/mcp.json
+[OK]     settings     .claude/settings.json -> .agent/settings.json
 [OK]     instructions CLAUDE.md -> AGENTS.md
 
 Done.
@@ -53,6 +54,7 @@ Done.
 | `.agent/commands` | `.claude/commands` | Claude Code |
 | `.agent/commands` | `.opencode/commands` | opencode |
 | `.agent/mcp.json` | `.mcp.json` | Claude Code (project MCP) |
+| `.agent/settings.json` | `.claude/settings.json` | Claude Code (project settings) |
 | `AGENTS.md` | `CLAUDE.md` | Claude Code v2.1.277 미만 |
 
 리소스를 추가할 때는 두 스크립트의 mapping 테이블에 각각 한 줄만 추가한다
@@ -109,6 +111,28 @@ MCP는 다른 리소스와 다르다. Claude Code의 project-scoped MCP 설정�
 local scope(`~/.claude.json`, 개인·현재 프로젝트)와 user scope(`~/.claude.json`, 개인·모든
 프로젝트)는 홈 디렉터리에 저장되므로 이 파일의 범위를 벗어난다.
 
+### Guardrail (`.agent/settings.json`, `.agent/hooks/guard.py`)
+
+Claude Code project settings로 다음 작업을 막는다.
+
+| 차단 대상 | 예 |
+|---|---|
+| 보호 브랜치 직접 push | `main`, `prod`, `qa`, `stg`, `dev`, `develop`, `release` |
+| PR merge (모든 브랜치) | `gh pr merge`, `gh api .../pulls/N/merge`, GraphQL `mergePullRequest` |
+| amend commit / force push | `git commit --amend`, `git push -f`, `--force-with-lease`, `+refspec`, `--mirror`, `--all` |
+| setting 파일 수정 | `.claude/settings.json`, `.claude/settings.local.json`, `.agent/settings.json`, `.agent/hooks/**`, `~/.claude/settings*.json` |
+
+그 외 commit·push(보호 브랜치가 아닌 브랜치)와 PR 생성은 허용한다.
+
+- `permissions.deny`는 흔한 표기를 막는 1차 방어선이다. Bash prefix 규칙은 `git -C . push`,
+  `HEAD:main` 같은 변형으로 우회되므로, `PreToolUse` 훅 `guard.py`가 명령을 파싱해 최종 판정한다.
+  보호 브랜치 판정에는 refspec의 destination과, refspec이 없을 때 현재 브랜치·upstream을 쓴다.
+- setting 파일은 Edit/Write 도구는 물론 Bash에서도 읽기 전용이다(`cat`, `jq`, `git diff`,
+  `git add`, `git commit` 등 읽기·커밋만 허용). 에이전트는 이 규칙 자체를 바꿀 수 없으므로,
+  규칙 변경은 사람이 직접 파일을 수정해야 한다.
+- 훅은 `python3`로 실행된다. `python3`가 없으면 훅이 non-blocking error로 끝나 deny 규칙만 적용된다.
+- Codex·opencode에는 이 설정이 적용되지 않는다. 같은 규칙을 `AGENTS.md`에 지침으로 기술해 둔다.
+
 ### 안전 동작
 
 - **실제 디렉터리·파일은 절대 덮어쓰지 않는다.** target이 링크가 아닌 실제 데이터면
@@ -147,6 +171,8 @@ AGENTS.md                                 # 모든 에이전트 공통 진입점
     references/document-types.md          # 문서 9종별 판정 기준
   commands/doc-sync.md                    # /doc-sync
   mcp.json                                # MCP 설정 정본 (빈 상태로 포함)
+  settings.json                           # Claude Code project settings (guardrail)
+  hooks/guard.py                          # PreToolUse guard 훅
 script/
   setup-agent-links.sh                    # Linux / macOS
   setup-agent-links.ps1                   # Windows PowerShell
@@ -158,6 +184,7 @@ setup 스크립트가 생성하며 Git에서 제외되는 경로(gitignored):
 .claude/skills, .claude/rules, .claude/agents, .claude/commands
 .agents/skills
 .opencode/commands
+.claude/settings.json
 CLAUDE.md
 ```
 
