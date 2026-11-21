@@ -279,6 +279,11 @@ AGENTS.md                                 # 모든 에이전트 공통 진입점
   skills/project-documentation/
     SKILL.md                              # 문서화 Rule 정본
     references/document-types.md          # 문서 9종별 판정 기준
+  skills/sdd-workflow/
+    SKILL.md                              # SDD 워크플로우 진입점 (단계 스킬을 순서대로 호출)
+    scripts/timeline.mjs                  # 단계별 수행 시간·토큰 사용량 기록/집계
+  skills/sdd-<stage>/SKILL.md             # SDD 단계 스킬 8종 (explore ~ report)
+  skills/conventional-commit/SKILL.md     # Conventional Commits 커밋 (sdd-report가 호출)
   commands/doc-sync.md                    # /doc-sync
   mcp.json                                # MCP 설정 정본 (빈 상태로 포함)
   guardrails/
