@@ -1,6 +1,6 @@
 ---
 name: project-documentation
-description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(PRD, Requirements, ADR, System/Application/Data Architecture, Tech stacks, Wireframe, Storyboard)를 새로 작성할지, 최신화할지, Deprecation할지 판단하고 그 작업을 트리거한다. Use when a design decision is finalized; when scope, requirements, tech stack, architecture, data model, or screens change; when a new project is initialized; before closing a milestone or PR that changed any of those; or when the user asks to write, review, refresh, sync, or clean up project documentation ("문서화", "문서 최신화", "문서 점검", "are the docs up to date"). 정보가 부족한 문서는 억지로 작성하지 않고 "작성 불가"로 보고한다.
+description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(PRD, Requirements, ADR, System/Application/Data Architecture, Tech stacks, Wireframe, Storyboard)를 새로 작성할지, 최신화할지, Deprecation할지 판단하고 그 작업을 트리거한다. Use when a design decision is finalized; when scope, requirements, tech stack, architecture, data model, or screens change; when a new project is initialized; before closing a milestone that changed any of those; or when the user asks to write, review, refresh, sync, or clean up project documentation ("문서화", "문서 최신화", "문서 점검", "are the docs up to date"). 정보가 부족한 문서는 억지로 작성하지 않고 "작성 불가"로 보고한다.
 ---
 
 # 프로젝트 문서화 Rule
@@ -60,6 +60,8 @@ description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(P
 
 대상 문서에 해당하는 기존 문서를 찾는다. 파일명·제목·내용으로 식별한다. 문서가 저장되는 공간 (이 프로젝트 혹은 외부 공간 - Wiki, Notion 등)은 이 스킬이 정하지 않고 따로 정의된, 프로젝트 Rule에 따른다.
 
+`runs/` 아래의 SDD 작업 기록(`sdd-workflow`)은 작업 시점의 기록이라 대상 문서가 아니다. 파일 이름이 대상 문서와 비슷하더라도(`DATA_ARCHITECTURE.md`, `ACCEPTANCE_CRITERIA.md` 등) 인벤토리에서 제외하고 수정하지 않는다.
+
 ### 2단계. 변경 신호 수집
 
 현재 형상에서 무엇이 바뀌었거나 새로 확정되었는지 파악한다. 변경 신호 → 영향 문서 매핑:
@@ -117,4 +119,4 @@ description: 프로젝트의 현재 형상을 기준으로 프로젝트 문서(P
 - 설계 결정이 확정된 직후
 - 기술 스택, 아키텍처, 스키마, 화면, 요구사항을 바꾸는 작업을 완료한 직후
 - 새 프로젝트를 초기화할 때
-- 마일스톤이나 PR을 닫기 전
+- 마일스톤을 닫기 전
