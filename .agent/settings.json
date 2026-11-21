@@ -69,7 +69,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if command -v node >/dev/null 2>&1; then node \"$CLAUDE_PROJECT_DIR/.agent/hooks/guard.mjs\"; else echo '{\"systemMessage\":\"[guard] Node.js를 찾을 수 없어 guard 훅을 건너뜁니다. permissions.deny 규칙만 적용됩니다.\"}'; fi"
+            "command": "if command -v node >/dev/null 2>&1; then node \"$CLAUDE_PROJECT_DIR/.agent/hooks/branch-guard.mjs\"; else echo '{\"systemMessage\":\"[guard] Node.js를 찾을 수 없어 guard 훅을 건너뜁니다. permissions.deny 규칙만 적용됩니다.\"}'; fi"
+          },
+          {
+            "type": "command",
+            "command": "if command -v node >/dev/null 2>&1; then node \"$CLAUDE_PROJECT_DIR/.agent/hooks/setting-file-guard.mjs\"; fi"
           }
         ]
       }
